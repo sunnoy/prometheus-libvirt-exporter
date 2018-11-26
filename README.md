@@ -1,56 +1,95 @@
-# prometheus-libvirt-exporter
-prometheus-libvirt-exporter for host and vm metrics exposed for prometheus, written in Go with pluggable metric collectors.
-By default, this exporter listens on TCP port 9000,Path '/metrics',to expose metrics.
+# Prometheus libvirt exporter
 
-[![Build Status](https://travis-ci.org/zhangjianweibj/prometheus-libvirt-exporter.svg?branch=master)](https://travis-ci.org/zhangjianweibj/prometheus-libvirt-exporter)
-[![codecov](https://codecov.io/gh/zhangjianweibj/prometheus-libvirt-exporter/branch/master/graph/badge.svg)](https://codecov.io/gh/zhangjianweibj/prometheus-libvirt-exporter)
-# Building and running
+## this is fork repo
 
-1.install go dep
+this repo fork [prometheus-libvirt-exporter](https://github.com/zhangjianweibj/prometheus-libvirt-exporter)
 
-2.cp $GOPATH/bin/dep /usr/bin/
+## libvirt api
 
-3.dep ensure
+The libvirt api is [here](https://libvirt.org/html/)
 
-4.go build prometheus-libvirt-exporter.go
+## libvirt go package
 
-5../prometheus-libvirt-exporter
+This exporter makes use of
+[libvirt-go](https://github.com/digitalocean/go-libvirt), the digitalocean Go
+bindings for libvirt. Ideally, this exporter should make use of the
+`GetAllDomainStats()` API call to extract all relevant metrics.
+Unfortunately, we at Kumina still need this exporter to be compatible
+with older versions of libvirt that don't support this API call.
 
-## To see all available configuration flags:
+## export metrics
 
-./prometheus-libvirt-exporter -h
+### base in forks repo
+The following metrics/labels are being exported:
 
+```bash
+libvirt_domain_block_stats_read_bytes_total{domain="...",source_file="...",target_device="..."}
+libvirt_domain_block_stats_read_requests_total{domain="...",source_file="...",target_device="..."}
+libvirt_domain_block_stats_write_bytes_total{domain="...",source_file="...",target_device="..."}
+libvirt_domain_block_stats_write_requests_total{domain="...",source_file="...",target_device="..."}
+libvirt_domain_info_cpu_time_seconds_total{domain="..."}
+libvirt_domain_info_maximum_memory_bytes{domain="..."}
+libvirt_domain_info_memory_usage_bytes{domain="..."}
+libvirt_domain_info_virtual_cpus{domain="..."}
+libvirt_domain_interface_stats_receive_bytes_total{domain="...",source_bridge="...",target_device="..."}
+libvirt_domain_interface_stats_receive_drops_total{domain="...",source_bridge="...",target_device="..."}
+libvirt_domain_interface_stats_receive_errors_total{domain="...",source_bridge="...",target_device="..."}
+libvirt_domain_interface_stats_receive_packets_total{domain="...",source_bridge="...",target_device="..."}
+libvirt_domain_interface_stats_transmit_bytes_total{domain="...",source_bridge="...",target_device="..."}
+libvirt_domain_interface_stats_transmit_drops_total{domain="...",source_bridge="...",target_device="..."}
+libvirt_domain_interface_stats_transmit_errors_total{domain="...",source_bridge="...",target_device="..."}
+libvirt_domain_interface_stats_transmit_packets_total{domain="...",source_bridge="...",target_device="..."}
+libvirt_up
+```
 
-## metrics
-Name | Description
----------|-------------
-up|scraping libvirt's metrics state
-domains_number|get number of domains
-domain_state_code|code of the domain state,include state description
-maximum_memory_bytes|Maximum allowed memory of the domain, in bytes
-memory_usage_bytes|Memory usage of the domain, in bytes
-virtual_cpus|Number of virtual CPUs for the domain
-cpu_time_seconds_total|Amount of CPU time used by the domain, in seconds
-read_bytes_total|Number of bytes read from a block device, in bytes
-read_requests_total|Number of read requests from a block device
-write_bytes_total|Number of bytes written from a block device, in bytes
-write_requests_total|Number of write requests from a block device
-receive_bytes_total|Number of bytes received on a network interface, in bytes
-receive_packets_total|Number of packets received on a network interface
-receive_errors_total|Number of packet receive errors on a network interface
-receive_drops_total|Number of packet receive drops on a network interface
-transmit_bytes_total|Number of bytes transmitted on a network interface, in bytes
-transmit_packets_total|Number of packets transmitted on a network interface
-transmit_errors_total|Number of packet transmit errors on a network interface
-transmit_drops_total|Number of packet transmit drops on a network interface
+### what i do
 
+add block info metrics
 
-##Example
-# TYPE libvirt_domain_state_code gauge
-libvirt_domain_state_code{domainName="instance-00000126",instanceId="4a50e208-eb6d-4a6e-904b-f9d9ef4ec483",instanceName="test",stateDesc="the domain is shut off"} 5
-libvirt_domain_state_code{domainName="instance-00000157",instanceId="cee27a5f-278f-4f1c-b6b8-3d0879834cd1",instanceName="AWvlZ9qA-DRDSSingle-FeqKU6N4",stateDesc="the domain is shut off"} 5
-libvirt_domain_state_code{domainName="instance-0000016c",instanceId="821e161e-ab48-41ba-914c-7febca28cb76",instanceName="aXdazRlV-ESCluster-d8MwUMzB",stateDesc="the domain is shut off"} 5
-libvirt_domain_state_code{domainName="instance-00000192",instanceId="3f403d75-85fe-4965-9d37-dcfbfd06482f",instanceName="wrDCxC5p",stateDesc="the domain is running"} 1
-libvirt_domain_state_code{domainName="instance-0000021a",instanceId="9bcd4f1f-a02f-47bc-bebc-600f0a798be1",instanceName="like",stateDesc="the domain is shut off"} 5
-libvirt_domain_state_code{domainName="instance-0000021c",instanceId="2687aba1-f86e-4370-8993-b652234fc102",instanceName="KKAQH52k",stateDesc="the domain is shut off"} 5
-libvirt_domain_state_code{domainName="instance-0000021d",instanceId="c86e3187-8f35-4256-9995-9e4dc3cd696f",instanceName="RF8aueUv",stateDesc="the domain is shut off"} 5
+```bash
+# HELP libvirt_domain_block_info_allocation host physical size in bytes of the image container, in bytes.
+libvirt_domain_block_info_allocation{domain="...",source_file="",target_device="..."} 
+# HELP libvirt_domain_block_info_capacity how much storage the guest will see, in bytes.
+libvirt_domain_block_info_capacity{domain="...",source_file="",target_device="..."} 
+# HELP libvirt_domain_block_info_physical host storage in bytes occupied by the image, in bytes.
+libvirt_domain_block_info_physical{domain="...",source_file="",target_device="..."} 
+
+#some momory metrics
+virsh dommemstat test
+actual 1048576
+swap_in 0
+swap_out 0
+major_fault 484
+minor_fault 48658488
+unused 797544
+available 1016008
+usable 767732
+last_update 1543212082
+rss 386304
+```
+
+## build
+
+about the project look [here](https://www.li-rui.top/2018/11/21/monitor/%E5%BC%80%E5%8F%91libvirt_exporter%E7%9A%84go%E7%89%88%E6%9C%AC/)
+
+## how to use
+
+This repository provides code for a Prometheus metrics exporter
+for [libvirt](https://libvirt.org/). This exporter connects to any
+libvirt daemon and exports per-domain metrics related to CPU, memory,
+disk and network usage. By default, this exporter listens on TCP port
+9000 and use libvirtd api by unix remote api (just listen libvirtd sock)
+
+after build ，you can to see hlep
+
+```bash
+./prometheus-libvirt-exporter  -h
+Usage of ./prometheus-libvirt-exporter:
+  -libvirt.uri string
+        Libvirt URI from which to extract metrics. (default "/var/run/libvirt/libvirt-sock")
+  -web.listen-address string
+        Address to listen on for web interface and telemetry. (default ":9000")
+  -web.telemetry-path string
+        Path under which to expose metrics. (default "/metrics")
+
+```
