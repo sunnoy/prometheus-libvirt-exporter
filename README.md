@@ -70,6 +70,8 @@ last_update 1543212082
 rss 386304
 ```
 
+more can look `output-sample.txt`
+
 ## build
 
 about the project look [here](https://www.li-rui.top/2018/11/21/monitor/%E5%BC%80%E5%8F%91libvirt_exporter%E7%9A%84go%E7%89%88%E6%9C%AC/)
