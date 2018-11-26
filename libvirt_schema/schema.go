@@ -1,6 +1,8 @@
 package libvirt_schema
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+)
 
 type Domain struct {
 	Devices Devices `xml:"devices"`
@@ -31,6 +33,15 @@ type Disk struct {
 
 type DiskSource struct {
 	File string `xml:"file,attr"`
+	Protocol string `xml:"protocol,attr"`
+	Name string `xml:"name,attr"`
+	Host []Host `xml:"host"`
+
+
+}
+
+type Host struct {
+	Name string `xml:"name,attr"`
 }
 
 type DiskTarget struct {
@@ -40,6 +51,9 @@ type DiskTarget struct {
 type Interface struct {
 	Source InterfaceSource `xml:"source"`
 	Target InterfaceTarget `xml:"target"`
+	Mac DomainInterfaceMacXml `xml:"mac"`
+	Alias DomainInterfaceAliasXml `xml:"alias"`
+
 }
 
 type InterfaceSource struct {
@@ -49,3 +63,16 @@ type InterfaceSource struct {
 type InterfaceTarget struct {
 	Device string `xml:"dev,attr"`
 }
+
+
+// MAC地址
+type DomainInterfaceMacXml struct {
+	Address string `xml:"address,attr"`
+}
+
+
+// 网卡AliasName
+type DomainInterfaceAliasXml struct{
+	Name string `xml:"name,attr"`
+}
+
