@@ -372,6 +372,7 @@ func CollectDomain(ch chan<- prometheus.Metric, l *libvirt.Libvirt, domain *libv
 
 		var rRdReq, rRdBytes, rWrReq, rWrBytes int64
 		var rAllocation, rCapacity, rPhysical uint64
+		var Sname, Shost string
 
 		if isActive == 1 {
 			rRdReq, rRdBytes, rWrReq, rWrBytes, _, err = l.DomainBlockStats(*domain, disk.Target.Device)
@@ -384,6 +385,13 @@ func CollectDomain(ch chan<- prometheus.Metric, l *libvirt.Libvirt, domain *libv
 		}
 
 
+		if disk.Source.Name != "" {
+			Sname = disk.Source.Name
+		}
+
+		if disk.Source.Host != nil {
+			Shost = disk.Source.Host[0].Name
+		}
 		////block info
 		ch <- prometheus.MustNewConstMetric(
 			libvirtDomainBlockCapacity,
@@ -391,8 +399,10 @@ func CollectDomain(ch chan<- prometheus.Metric, l *libvirt.Libvirt, domain *libv
 			float64(rCapacity),
 			domainName, instanceName, string(instanceId[:]),
 			disk.Source.File,
-			disk.Source.Name,
-			disk.Source.Host[0].Name,
+			//rbd
+			Sname,
+			//mon host
+			Shost,
 			disk.Target.Device,
 			host)
 
@@ -402,8 +412,10 @@ func CollectDomain(ch chan<- prometheus.Metric, l *libvirt.Libvirt, domain *libv
 			float64(rAllocation),
 			domainName, instanceName, string(instanceId[:]),
 			disk.Source.File,
-			disk.Source.Name,
-			disk.Source.Host[0].Name,
+			//rbd
+			Sname,
+			//mon host
+			Shost,
 			disk.Target.Device,
 			host)
 
@@ -413,8 +425,10 @@ func CollectDomain(ch chan<- prometheus.Metric, l *libvirt.Libvirt, domain *libv
 			float64(rPhysical),
 			domainName, instanceName, string(instanceId[:]),
 			disk.Source.File,
-			disk.Source.Name,
-			disk.Source.Host[0].Name,
+			//rbd
+			Sname,
+			//mon host
+			Shost,
 			disk.Target.Device,
 			host)
 
