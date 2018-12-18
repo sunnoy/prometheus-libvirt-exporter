@@ -12,10 +12,7 @@ The libvirt api is [here](https://libvirt.org/html/)
 
 This exporter makes use of
 [libvirt-go](https://github.com/digitalocean/go-libvirt), the digitalocean Go
-bindings for libvirt. Ideally, this exporter should make use of the
-`GetAllDomainStats()` API call to extract all relevant metrics.
-Unfortunately, we at Kumina still need this exporter to be compatible
-with older versions of libvirt that don't support this API call.
+bindings for libvirt. 
 
 ## export metrics
 
