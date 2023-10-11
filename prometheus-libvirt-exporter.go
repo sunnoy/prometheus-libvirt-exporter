@@ -5,6 +5,7 @@ import (
 	"flag"
 	"github.com/digitalocean/go-libvirt"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
 	"net"
 	"net/http"
@@ -267,7 +268,7 @@ func CollectDomain(ch chan<- prometheus.Metric, l *libvirt.Libvirt, domain *libv
 
 		//report memory statistics
 		rDomainMemroyStats, rgetDomainMemoryStatsErr := l.DomainMemoryStats(*domain, 11, 0)
-		if (rgetDomainMemoryStatsErr != nil) {
+		if rgetDomainMemoryStatsErr != nil {
 			log.Fatalf("error getting instance memory state  of virsh dommemstat for '%s': %v", domainName, rgetDomainMemoryStatsErr)
 		}
 
@@ -383,7 +384,6 @@ func CollectDomain(ch chan<- prometheus.Metric, l *libvirt.Libvirt, domain *libv
 			log.Fatalf("failed to get DomainBlockStats: %v", err)
 			return err
 		}
-
 
 		if disk.Source.Name != "" {
 			Sname = disk.Source.Name
@@ -578,8 +578,6 @@ func CollectDomain(ch chan<- prometheus.Metric, l *libvirt.Libvirt, domain *libv
 	return nil
 }
 
-
-
 // CollectFromLibvirt obtains Prometheus metrics from all domains in a
 // libvirt setup.
 func CollectFromLibvirt(ch chan<- prometheus.Metric, uri string) error {
@@ -714,7 +712,7 @@ func main() {
 	}
 	prometheus.MustRegister(exporter)
 
-	http.Handle(*metricsPath, prometheus.Handler())
+	http.Handle(*metricsPath, promhttp.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`
 			<html>
